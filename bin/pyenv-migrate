@@ -23,6 +23,15 @@ usage() {
   [ -z "$1" ] || exit "$1"
 }
 
+try_install() {
+  PYENV_VERSION="${dst}" pyenv-exec pip install "${req}"
+  if [ $? -ne 0]; then
+    echo "Specify working package for ${req} [nothing to skip this package]"
+    read new_req
+    [[ ! -z "${new_req}"]] && try_install "${new_req}"
+  fi
+}
+
 migration_failed() {
   { echo
     echo "MIGRATION FAILED"
@@ -59,7 +68,11 @@ PIP_REQUIREMENTS="${TMP}/requirements.${SEED}.txt"
 
 trap migration_failed ERR
 PYENV_VERSION="${src}" pyenv-exec pip freeze >> "${PIP_REQUIREMENTS}"
-PYENV_VERSION="${dst}" pyenv-exec pip install --requirement "${PIP_REQUIREMENTS}"
+for req in $(cat "${PIP_REQUIREMENTS}" | cut -f1 -d"#" | sed '/^\s*$/d'); do
+  try_install "${req}"
+done
+
+PYENV_VERSION="${dst}" | xargs -n 1 pyenv-exec pip install
 pyenv-rehash
 rm -f "${PIP_REQUIREMENTS}"
 trap - ERR
