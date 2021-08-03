@@ -68,11 +68,7 @@ PIP_REQUIREMENTS="${TMP}/requirements.${SEED}.txt"
 
 trap migration_failed ERR
 PYENV_VERSION="${src}" pyenv-exec pip freeze >> "${PIP_REQUIREMENTS}"
-for req in $(cat "${PIP_REQUIREMENTS}" | cut -f1 -d"#" | sed '/^\s*$/d'); do
-  try_install "${req}"
-done
-
-PYENV_VERSION="${dst}" | xargs -n 1 pyenv-exec pip install
+PYENV_VERSION="${dst}" cat "${PIP_REQUIREMENTS}" | cut -f1 -d"#" | sed '/^\s*$/d' | xargs -n 1 try_install
 pyenv-rehash
 rm -f "${PIP_REQUIREMENTS}"
 trap - ERR
