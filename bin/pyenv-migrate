@@ -28,7 +28,7 @@ try_install() {
   if [ $? -ne 0]; then
     echo "Specify working package for ${req} [nothing to skip this package]"
     read new_req
-    [[ ! -z "${new_req}"]] && try_install "${new_req}"
+    [ ! -z "${new_req}" ] && try_install "${new_req}"
   fi
 }
 
